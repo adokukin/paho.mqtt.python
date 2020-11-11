@@ -1364,7 +1364,7 @@ class Client(object):
         if self._sock is None:
             return MQTT_ERR_NO_CONN
 
-        max_packets = len(self._out_messages) + len(self._in_messages)
+        max_packets = min(len(self._out_messages) + len(self._in_messages), max_packets)
         if max_packets < 1:
             max_packets = 1
 
@@ -1378,7 +1378,7 @@ class Client(object):
                 return MQTT_ERR_SUCCESS
         return MQTT_ERR_SUCCESS
 
-    def loop_write(self, max_packets=1):
+    def loop_write(self, max_packets=0):
         """Process write network events. Use in place of calling loop() if you
         wish to handle your client writes as part of your own application.
 
@@ -1391,7 +1391,11 @@ class Client(object):
         if self._sock is None:
             return MQTT_ERR_NO_CONN
 
-        max_packets = len(self._out_packet) + 1
+        if max_packets > 0:
+          max_packets = min(len(self._out_packet) + 1, max_packets)
+        else:
+          max_packets = len(self._out_packet) + 1
+          
         if max_packets < 1:
             max_packets = 1
 
@@ -2910,7 +2914,7 @@ class Client(object):
                         self._easy_log(MQTT_LOG_ERR, 'Caught exception in on_message: %s', err)
 
     def _thread_main(self):
-        self.loop_forever(retry_first_connection=True)
+        self.loop_forever(retry_first_connection=True, max_packets=5)
 
     def _reconnect_wait(self):
         # See reconnect_delay_set for details
