@@ -2094,9 +2094,11 @@ class Client(object):
 
         while self._current_out_packet:
             packet = self._current_out_packet
+            self._easy_log(MQTT_LOG_INFO, 'Sending packet %d', packet['mid'])
 
             try:
                 write_length = self._sock_send(packet['packet'][packet['pos']:])
+                self._easy_log(MQTT_LOG_INFO, 'Packet %d %s _sock_send()=%d', packet['mid'], packet['command'], write_length)
             except (AttributeError, ValueError):
                 self._current_out_packet_mutex.release()
                 return MQTT_ERR_SUCCESS
